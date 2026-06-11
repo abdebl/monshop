@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Aindiabstor — Admin</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', sans-serif; background: #f0f4ff; color: #1e293b; }
+
+/* LOGIN */
+.login-page {
+  min-height: 100vh; display: flex; align-items: center;
+  justify-content: center; background: linear-gradient(135deg, #1a56db, #1e40af);
+}
+.login-box {
+  background: #fff; border-radius: 16px; padding: 48px 40px;
+  width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.login-logo { text-align: center; margin-bottom: 32px; }
+.login-logo h1 { font-size: 1.8rem; font-weight: 900; color: #1a56db; letter-spacing: 2px; }
+.login-logo p { color: #888; font-size: 0.85rem; margin-top: 4px; }
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #374151; margin-bottom: 6px; }
+.form-group input {
+  width: 100%; padding: 12px 16px; border: 2px solid #e5e7eb;
+  border-radius: 8px; font-size: 0.95rem; transition: border 0.2s;
+  outline: none;
+}
+.form-group input:focus { border-color: #1a56db; }
+.login-btn {
+  width: 100%; padding: 14px; background: #1a56db; color: #fff;
+  border: none; border-radius: 8px; font-size: 1rem; font-weight: 700;
+  cursor: pointer; transition: background 0.2s; margin-top: 8px;
+}
+.login-btn:hover { background: #1e40af; }
+.login-error { color: #ef4444; font-size: 0.85rem; text-align: center; margin-top: 12px; display: none; }
+
+/* LAYOUT */
+.admin-layout { display: flex; min-height: 100vh; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 260px; background: #fff; border-right: 1px solid #e5e7eb;
+  display: flex; flex-direction: column; position: fixed;
+  top: 0; left: 0; bottom: 0; z-index: 10;
+}
+.sidebar-logo {
+  padding: 24px 20px; border-bottom: 1px solid #e5e7eb;
+  display: flex; align-items: center; gap: 12px;
+}
+.sidebar-logo .logo-icon {
+  width: 40px; height: 40px; background: #1a56db; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 1.2rem; font-weight: 900;
+}
+.sidebar-logo h2 { font-size: 1rem; font-weight: 800; color: #1a56db; }
+.sidebar-logo p { font-size: 0.72rem; color: #888; }
+.sidebar-menu { flex: 1; padding: 16px 12px; }
+.menu-section { font-size: 0.7rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; padding: 8px 8px 4px; margin-top: 8px; }
+.menu-item {
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+  border-radius: 8px; cursor: pointer; transition: all 0.2s;
+  font-size: 0.9rem; color: #374151; margin-bottom: 2px;
+}
+.menu-item:hover { background: #eff6ff; color: #1a56db; }
+.menu-item.active { background: #1a56db; color: #fff; }
+.menu-item .icon { font-size: 1.1rem; width: 20px; text-align: center; }
+.sidebar-footer {
+  padding: 16px 12px; border-top: 1px solid #e5e7eb;
+}
+.logout-btn {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  border-radius: 8px; cursor: pointer; color: #ef4444;
+  font-size: 0.9rem; transition: background 0.2s; width: 100%;
+  background: none; border: none;
+}
+.logout-btn:hover { background: #fef2f2; }
+
+/* MAIN CONTENT */
+.main-content { margin-left: 260px; flex: 1; }
+.topbar {
+  background: #fff; padding: 16px 32px; border-bottom: 1px solid #e5e7eb;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 5;
+}
+.topbar h1 { font-size: 1.3rem; font-weight: 800; color: #1a56db; }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.admin-badge {
+  background: #eff6ff; color: #1a56db; padding: 6px 14px;
+  border-radius: 100px; font-size: 0.8rem; font-weight: 700;
+}
+.page-content { padding: 32px; }
+
+/* STATS CARDS */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 32px; }
+.stat-card {
+  background: #fff; border-radius: 12px; padding: 24px;
+  border: 1px solid #e5e7eb; transition: transform 0.2s;
+}
+.stat-card:hover { transform: translateY(-2px); }
+.stat-icon { font-size: 2rem; margin-bottom: 12px; }
+.stat-value { font-size: 2rem; font-weight: 900; color: #1a56db; }
+.stat-label { font-size: 0.85rem; color: #6b7280; margin-top: 4px; }
+.stat-change { font-size: 0.8rem; color: #10b981; margin-top: 8px; font-weight: 600; }
+
+/* SECTION CARD */
+.card {
+  background: #fff; border-radius: 12px; border: 1px solid #e5e7eb;
+  margin-bottom: 24px; overflow: hidden;
+}
+.card-header {
+  padding: 20px 24px; border-bottom: 1px solid #e5e7eb;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-header h2 { font-size: 1rem; font-weight: 800; color: #1e293b; }
+.card-body { padding: 24px; }
+
+/* BUTTONS */
+.btn {
+  padding: 10px 20px; border-radius: 8px; font-size: 0.88rem;
+  font-weight: 700; cursor: pointer; border: none; transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-primary { background: #1a56db; color: #fff; }
+.btn-primary:hover { background: #1e40af; }
+.btn-danger { background: #fef2f2; color: #ef4444; }
+.btn-danger:hover { background: #fee2e2; }
+.btn-success { background: #f0fdf4; color: #16a34a; }
+.btn-success:hover { background: #dcfce7; }
+.btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+
+/* TABLE */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left; padding: 12px 16px; font-size: 0.78rem;
+  text-transform: uppercase; letter-spacing: 1px; color: #9ca3af;
+  border-bottom: 1px solid #e5e7eb; background: #f9fafb;
+}
+td { padding: 14px 16px; border-bottom: 1px solid #f3f4f6; font-size: 0.9rem; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #f9fafb; }
+.product-emoji { font-size: 1.5rem; }
+.badge-promo { background: #fef3c7; color: #92400e; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+.badge-new { background: #dbeafe; color: #1e40af; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+.stock-ok { color: #16a34a; font-weight: 700; }
+.stock-low { color: #ef4444; font-weight: 700; }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+  z-index: 100; display: none; align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: #fff; border-radius: 16px; padding: 32px;
+  width: 500px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
+  position: relative;
+}
+.modal h2 { font-size: 1.2rem; font-weight: 800; margin-bottom: 24px; color: #1a56db; }
+.modal-close {
+  position: absolute; top: 16px; right: 16px;
+  background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #9ca3af;
+}
+.modal-close:hover { color: #000; }
+.field-group { margin-bottom: 16px; }
+.field-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #374151; margin-bottom: 6px; }
+.field-group input, .field-group select, .field-group textarea {
+  width: 100%; padding: 10px 14px; border: 2px solid #e5e7eb;
+  border-radius: 8px; font-size: 0.9rem; outline: none; transition: border 0.2s;
+  font-family: inherit;
+}
+.field-group input:focus, .field-group select:focus, .field-group textarea:focus { border-color: #1a56db; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.modal-footer { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: #1a56db; color: #fff; padding: 12px 20px;
+  border-radius: 8px; font-weight: 600; z-index: 200;
+  transform: translateY(100px); transition: transform 0.3s;
+  box-shadow: 0 4px 12px rgba(26,86,219,0.4);
+}
+.toast.show { transform: translateY(0); }
+
+/* PAGES */
+.page { display: none; }
+.page.active { display: block; }
+
+/* CHART */
+.chart-bars { display: flex; align-items: flex-end; gap: 8px; height: 160px; padding: 0 8px; }
+.chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+.chart-bar { width: 100%; background: #1a56db; border-radius: 4px 4px 0 0; transition: height 0.5s; min-height: 4px; }
+.chart-label { font-size: 0.7rem; color: #9ca3af; }
+.chart-value { font-size: 0.7rem; color: #1a56db; font-weight: 700; }
+
+/* EMPTY STATE */
+.empty-state { text-align: center; padding: 48px; color: #9ca3af; }
+.empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+
+/* LOADING */
+.loading { text-align: center; padding: 32px; color: #9ca3af; }
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN PAGE ===== -->
+<div id="loginPage" class="login-page">
+  <div class="login-box">
+    <div class="login-logo">
+      <h1>AINDIABSTOR</h1>
+      <p>Panel Administrateur</p>
+    </div>
+    <div class="form-group">
+      <label>Email Admin</label>
+      <input type="email" id="loginEmail" placeholder="admin@aindiabstor.com" value="admin@aindiabstor.com"/>
+    </div>
+    <div class="form-group">
+      <label>Mot de passe</label>
+      <input type="password" id="loginPassword" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="login-btn" onclick="doLogin()">🔐 Se connecter</button>
+    <div class="login-error" id="loginError">❌ Email ou mot de passe incorrect</div>
+  </div>
+</div>
+
+<!-- ===== ADMIN PANEL ===== -->
+<div id="adminPanel" class="admin-layout" style="display:none;">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">A</div>
+      <div>
+        <h2>AINDIABSTOR</h2>
+        <p>Administration</p>
+      </div>
+    </div>
+    <nav class="sidebar-menu">
+      <div class="menu-section">Principal</div>
+      <div class="menu-item active" onclick="showPage('dashboard', this)">
+        <span class="icon">📊</span> Tableau de bord
+      </div>
+      <div class="menu-item" onclick="showPage('products', this)">
+        <span class="icon">📦</span> Produits
+      </div>
+      <div class="menu-item" onclick="showPage('orders', this)">
+        <span class="icon">🛒</span> Commandes
+      </div>
+      <div class="menu-section">Boutique</div>
+      <div class="menu-item" onclick="showPage('categories', this)">
+        <span class="icon">🗂️</span> Catégories
+      </div>
+      <div class="menu-item" onclick="window.open('index.html','_blank')">
+        <span class="icon">🌐</span> Voir la boutique
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="logout-btn" onclick="doLogout()">
+        <span>🚪</span> Se déconnecter
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <div class="topbar">
+      <h1 id="pageTitle">Tableau de bord</h1>
+      <div class="topbar-right">
+        <span class="admin-badge">👤 Admin</span>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-value" id="statProducts">0</div>
+            <div class="stat-label">Produits</div>
+            <div class="stat-change">↑ actifs</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🛒</div>
+            <div class="stat-value" id="statOrders">0</div>
+            <div class="stat-label">Commandes</div>
+            <div class="stat-change">↑ total</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value" id="statRevenue">0</div>
+            <div class="stat-label">Revenus (MAD)</div>
+            <div class="stat-change">↑ cumulé</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🗂️</div>
+            <div class="stat-value" id="statCategories">0</div>
+            <div class="stat-label">Catégories</div>
+            <div class="stat-change">↑ actives</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>📈 Ventes par catégorie</h2>
+          </div>
+          <div class="card-body">
+            <div class="chart-bars" id="chartBars">
+              <div class="loading">Chargement...</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2>📦 Derniers produits ajoutés</h2>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Produit</th>
+                    <th>Catégorie</th>
+                    <th>Prix</th>
+                    <th>Stock</th>
+                  </tr>
+                </thead>
+                <tbody id="dashProductsTable">
+                  <tr><td colspan="4" class="loading">Chargement...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRODUCTS PAGE -->
+      <div class="page" id="page-products">
+        <div class="card">
+          <div class="card-header">
+            <h2>📦 Gestion des Produits</h2>
+            <button class="btn btn-primary" onclick="openAddProduct()">➕ Ajouter un produit</button>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Emoji</th>
+                    <th>Nom</th>
+                    <th>Catégorie</th>
+                    <th>Prix</th>
+                    <th>Ancien prix</th>
+                    <th>Stock</th>
+                    <th>Badge</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="productsTable">
+                  <tr><td colspan="8" class="loading">Chargement...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ORDERS PAGE -->
+      <div class="page" id="page-orders">
+        <div class="card">
+          <div class="card-header">
+            <h2>🛒 Commandes</h2>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Client</th>
+                    <th>Email</th>
+                    <th>Total</th>
+                    <th>Statut</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="ordersTable">
+                  <tr><td colspan="7" class="loading">Chargement...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CATEGORIES PAGE -->
+      <div class="page" id="page-categories">
+        <div class="card">
+          <div class="card-header">
+            <h2>🗂️ Catégories</h2>
+            <button class="btn btn-primary" onclick="openAddCategory()">➕ Ajouter</button>
+          </div>
+          <div class="card-body" style="padding:0;">
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Nom</th>
+                    <th>Nb produits</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="categoriesTable">
+                  <tr><td colspan="3" class="loading">Chargement...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PRODUIT -->
+<div class="modal-overlay" id="productModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('productModal')">✕</button>
+    <h2 id="productModalTitle">➕ Ajouter un produit</h2>
+    <input type="hidden" id="productId"/>
+    <div class="field-row">
+      <div class="field-group">
+        <label>Nom du produit *</label>
+        <input type="text" id="productName" placeholder="Ex: Sac à Main"/>
+      </div>
+      <div class="field-group">
+        <label>Emoji</label>
+        <input type="text" id="productEmoji" placeholder="📦"/>
+      </div>
+    </div>
+    <div class="field-group">
+      <label>Description</label>
+      <textarea id="productDesc" rows="3" placeholder="Description du produit..."></textarea>
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <label>Prix (MAD) *</label>
+        <input type="number" id="productPrice" placeholder="0"/>
+      </div>
+      <div class="field-group">
+        <label>Ancien prix (MAD)</label>
+        <input type="number" id="productOldPrice" placeholder="0"/>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field-group">
+        <label>Catégorie</label>
+        <input type="text" id="productCategory" placeholder="Mode, Tech, Beauté..."/>
+      </div>
+      <div class="field-group">
+        <label>Badge</label>
+        <select id="productBadge">
+          <option value="">Aucun</option>
+          <option value="NOUVEAU">NOUVEAU</option>
+          <option value="PROMO">PROMO</option>
+          <option value="SOLDES">SOLDES</option>
+          <option value="TOP">TOP</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-group">
+      <label>Stock</label>
+      <input type="number" id="productStock" placeholder="100"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" onclick="closeModal('productModal')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveProduct()">💾 Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CATEGORIE -->
+<div class="modal-overlay" id="categoryModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('categoryModal')">✕</button>
+    <h2>➕ Ajouter une catégorie</h2>
+    <div class="field-group">
+      <label>Nom de la catégorie *</label>
+      <input type="text" id="categoryName" placeholder="Ex: Mode, Tech, Beauté..."/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" onclick="closeModal('categoryModal')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveCategory()">💾 Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// =============================================
+// CONFIG SUPABASE
+// =============================================
+const SUPABASE_URL = 'https://gebcxkonzvaudurlmusj.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_X2kyy4FUGK09PMq3aPd-pw_iQcShVNB';
+
+// =============================================
+// ADMIN AUTH (simple, côté client)
+// =============================================
+const ADMIN_EMAIL = 'admin@aindiabstor.com';
+const ADMIN_PASSWORD = 'admin2024';
+
+function doLogin() {
+  const email = document.getElementById('loginEmail').value;
+  const pass = document.getElementById('loginPassword').value;
+  if (email === ADMIN_EMAIL && pass === ADMIN_PASSWORD) {
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'flex';
+    loadDashboard();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+  }
+}
+
+function doLogout() {
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('adminPanel').style.display = 'none';
+}
+
+// =============================================
+// NAVIGATION
+// =============================================
+const pageTitles = {
+  dashboard: '📊 Tableau de bord',
+  products: '📦 Produits',
+  orders: '🛒 Commandes',
+  categories: '🗂️ Catégories'
+};
+
+function showPage(name, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  el.classList.add('active');
+  document.getElementById('pageTitle').textContent = pageTitles[name];
+  if (name === 'dashboard') loadDashboard();
+  if (name === 'products') loadProducts();
+  if (name === 'orders') loadOrders();
+  if (name === 'categories') loadCategories();
+}
+
+// =============================================
+// SUPABASE API
+// =============================================
+async function sbFetch(table, method = 'GET', body = null, filter = '') {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${filter}`, {
+    method,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'return=representation' : ''
+    },
+    body: body ? JSON.stringify(body) : null
+  });
+  if (method === 'DELETE') return true;
+  return res.json();
+}
+
+// =============================================
+// DASHBOARD
+// =============================================
+async function loadDashboard() {
+  const products = await sbFetch('products', 'GET', null, '?select=*');
+  const orders = await sbFetch('orders', 'GET', null, '?select=*') || [];
+
+  document.getElementById('statProducts').textContent = Array.isArray(products) ? products.length : 0;
+  document.getElementById('statOrders').textContent = Array.isArray(orders) ? orders.length : 0;
+
+  const revenue = Array.isArray(orders) ? orders.reduce((s, o) => s + (o.total || 0), 0) : 0;
+  document.getElementById('statRevenue').textContent = revenue.toLocaleString();
+
+  if (Array.isArray(products)) {
+    const cats = [...new Set(products.map(p => p.category).filter(Boolean))];
+    document.getElementById('statCategories').textContent = cats.length;
+
+    // Chart
+    const catCounts = {};
+    products.forEach(p => { if (p.category) catCounts[p.category] = (catCounts[p.category] || 0) + 1; });
+    const max = Math.max(...Object.values(catCounts), 1);
+    document.getElementById('chartBars').innerHTML = Object.entries(catCounts).map(([cat, count]) => `
+      <div class="chart-bar-wrap">
+        <div class="chart-value">${count}</div>
+        <div class="chart-bar" style="height:${(count/max)*120}px"></div>
+        <div class="chart-label">${cat.substring(0,6)}</div>
+      </div>
+    `).join('');
+
+    // Last 5 products
+    document.getElementById('dashProductsTable').innerHTML = products.slice(0, 5).map(p => `
+      <tr>
+        <td><span class="product-emoji">${p.emoji || '📦'}</span> ${p.name}</td>
+        <td>${p.category || '-'}</td>
+        <td><strong>${p.price} MAD</strong></td>
+        <td class="${(p.stock || 0) < 10 ? 'stock-low' : 'stock-ok'}">${p.stock || 0}</td>
+      </tr>
+    `).join('');
+  }
+}
+
+// =============================================
+// PRODUCTS
+// =============================================
+let allProducts = [];
+
+async function loadProducts() {
+  document.getElementById('productsTable').innerHTML = '<tr><td colspan="8" class="loading">Chargement...</td></tr>';
+  allProducts = await sbFetch('products', 'GET', null, '?select=*&order=created_at.desc');
+  if (!Array.isArray(allProducts) || allProducts.length === 0) {
+    document.getElementById('productsTable').innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="icon">📦</div>Aucun produit. Ajoutez-en un !</div></td></tr>';
+    return;
+  }
+  document.getElementById('productsTable').innerHTML = allProducts.map(p => `
+    <tr>
+      <td class="product-emoji">${p.emoji || '📦'}</td>
+      <td><strong>${p.name}</strong></td>
+      <td>${p.category || '-'}</td>
+      <td><strong>${p.price} MAD</strong></td>
+      <td>${p.old_price ? p.old_price + ' MAD' : '-'}</td>
+      <td class="${(p.stock || 0) < 10 ? 'stock-low' : 'stock-ok'}">${p.stock || 0}</td>
+      <td>${p.badge ? `<span class="badge-${p.badge === 'NOUVEAU' ? 'new' : 'promo'}">${p.badge}</span>` : '-'}</td>
+      <td>
+        <button class="btn btn-success btn-sm" onclick="editProduct(${p.id})">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">🗑️</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openAddProduct() {
+  document.getElementById('productModalTitle').textContent = '➕ Ajouter un produit';
+  document.getElementById('productId').value = '';
+  document.getElementById('productName').value = '';
+  document.getElementById('productEmoji').value = '';
+  document.getElementById('productDesc').value = '';
+  document.getElementById('productPrice').value = '';
+  document.getElementById('productOldPrice').value = '';
+  document.getElementById('productCategory').value = '';
+  document.getElementById('productBadge').value = '';
+  document.getElementById('productStock').value = '100';
+  document.getElementById('productModal').classList.add('open');
+}
+
+function editProduct(id) {
+  const p = allProducts.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('productModalTitle').textContent = '✏️ Modifier le produit';
+  document.getElementById('productId').value = p.id;
+  document.getElementById('productName').value = p.name || '';
+  document.getElementById('productEmoji').value = p.emoji || '';
+  document.getElementById('productDesc').value = p.description || '';
+  document.getElementById('productPrice').value = p.price || '';
+  document.getElementById('productOldPrice').value = p.old_price || '';
+  document.getElementById('productCategory').value = p.category || '';
+  document.getElementById('productBadge').value = p.badge || '';
+  document.getElementById('productStock').value = p.stock || 100;
+  document.getElementById('productModal').classList.add('open');
+}
+
+async function saveProduct() {
+  const id = document.getElementById('productId').value;
+  const data = {
+    name: document.getElementById('productName').value,
+    emoji: document.getElementById('productEmoji').value || '📦',
+    description: document.getElementById('productDesc').value,
+    price: parseFloat(document.getElementById('productPrice').value) || 0,
+    old_price: parseFloat(document.getElementById('productOldPrice').value) || null,
+    category: document.getElementById('productCategory').value,
+    badge: document.getElementById('productBadge').value || null,
+    stock: parseInt(document.getElementById('productStock').value) || 100,
+  };
+  if (!data.name || !data.price) { showToast('⚠️ Nom et prix requis !'); return; }
+
+  if (id) {
+    await sbFetch('products', 'PATCH', data, `?id=eq.${id}`);
+    showToast('✅ Produit modifié !');
+  } else {
+    await sbFetch('products', 'POST', data);
+    showToast('✅ Produit ajouté !');
+  }
+  closeModal('productModal');
+  loadProducts();
+}
+
+async function deleteProduct(id) {
+  if (!confirm('Supprimer ce produit ?')) return;
+  await sbFetch('products', 'DELETE', null, `?id=eq.${id}`);
+  showToast('🗑️ Produit supprimé');
+  loadProducts();
+}
+
+// =============================================
+// ORDERS
+// =============================================
+async function loadOrders() {
+  document.getElementById('ordersTable').innerHTML = '<tr><td colspan="7" class="loading">Chargement...</td></tr>';
+  const orders = await sbFetch('orders', 'GET', null, '?select=*&order=created_at.desc');
+  if (!Array.isArray(orders) || orders.length === 0) {
+    document.getElementById('ordersTable').innerHTML = '<tr><td colspan="7"><div class="empty-state"><div class="icon">🛒</div>Aucune commande pour l\'instant.</div></td></tr>';
+    return;
+  }
+  document.getElementById('ordersTable').innerHTML = orders.map(o => `
+    <tr>
+      <td><code style="font-size:0.75rem">${o.id.substring(0,8)}...</code></td>
+      <td>${o.customer_name || '-'}</td>
+      <td>${o.customer_email || '-'}</td>
+      <td><strong>${o.total} MAD</strong></td>
+      <td><span class="badge-${o.status === 'paid' ? 'new' : 'promo'}">${o.status || 'pending'}</span></td>
+      <td>${new Date(o.created_at).toLocaleDateString('fr')}</td>
+      <td><button class="btn btn-success btn-sm">👁️</button></td>
+    </tr>
+  `).join('');
+}
+
+// =============================================
+// CATEGORIES
+// =============================================
+async function loadCategories() {
+  const products = await sbFetch('products', 'GET', null, '?select=category');
+  const catMap = {};
+  if (Array.isArray(products)) {
+    products.forEach(p => { if (p.category) catMap[p.category] = (catMap[p.category] || 0) + 1; });
+  }
+  if (Object.keys(catMap).length === 0) {
+    document.getElementById('categoriesTable').innerHTML = '<tr><td colspan="3"><div class="empty-state"><div class="icon">🗂️</div>Aucune catégorie.</div></td></tr>';
+    return;
+  }
+  document.getElementById('categoriesTable').innerHTML = Object.entries(catMap).map(([name, count]) => `
+    <tr>
+      <td><strong>${name}</strong></td>
+      <td>${count} produit${count > 1 ? 's' : ''}</td>
+      <td><button class="btn btn-danger btn-sm">🗑️</button></td>
+    </tr>
+  `).join('');
+}
+
+function openAddCategory() {
+  document.getElementById('categoryName').value = '';
+  document.getElementById('categoryModal').classList.add('open');
+}
+
+async function saveCategory() {
+  const name = document.getElementById('categoryName').value.trim();
+  if (!name) { showToast('⚠️ Nom requis !'); return; }
+  showToast('✅ Catégorie ajoutée !');
+  closeModal('categoryModal');
+}
+
+// =============================================
+// UTILS
+// =============================================
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
