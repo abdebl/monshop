@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MonShop — Boutique en ligne</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/antd/5.12.0/reset.css"/>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #f5f5f5; }
+
+    /* NAV */
+    .navbar {
+      background: #000; padding: 0 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px; position: sticky; top: 0; z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .navbar .logo { color: #fff; font-size: 1.5rem; font-weight: 800; letter-spacing: 2px; }
+    .navbar .logo span { color: #fff; border-bottom: 2px solid #fff; }
+    .nav-links { display: flex; gap: 24px; align-items: center; }
+    .nav-links a { color: #ccc; text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+    .nav-links a:hover { color: #fff; }
+    .cart-btn {
+      background: #fff; color: #000; border: none; padding: 8px 20px;
+      border-radius: 4px; cursor: pointer; font-weight: 700; font-size: 0.9rem;
+      display: flex; align-items: center; gap: 8px; transition: background 0.2s;
+    }
+    .cart-btn:hover { background: #e0e0e0; }
+    .cart-count {
+      background: #000; color: #fff; border-radius: 50%;
+      width: 20px; height: 20px; display: flex; align-items: center;
+      justify-content: center; font-size: 0.7rem; font-weight: 800;
+      border: 2px solid #fff;
+    }
+
+    /* HERO */
+    .hero {
+      background: #000; color: #fff;
+      padding: 100px 40px; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center, #222 0%, #000 70%);
+    }
+    .hero-content { position: relative; z-index: 1; }
+    .hero h1 { font-size: 3.5rem; font-weight: 900; margin-bottom: 16px; letter-spacing: -1px; }
+    .hero h1 span { color: #fff; text-decoration: underline; text-underline-offset: 6px; }
+    .hero p { font-size: 1.1rem; color: #aaa; margin-bottom: 32px; }
+    .hero-btn {
+      background: #fff; color: #000; border: none;
+      padding: 14px 40px; font-size: 1rem; font-weight: 800;
+      border-radius: 4px; cursor: pointer; transition: all 0.2s;
+      letter-spacing: 1px;
+    }
+    .hero-btn:hover { background: #e0e0e0; transform: translateY(-2px); }
+
+    /* SECTION */
+    .section { padding: 60px 40px; max-width: 1200px; margin: 0 auto; }
+    .section-title {
+      font-size: 1.8rem; font-weight: 800; color: #000;
+      margin-bottom: 8px; letter-spacing: -0.5px;
+    }
+    .section-sub { color: #888; margin-bottom: 36px; font-size: 0.95rem; }
+    .divider { width: 48px; height: 3px; background: #000; margin-bottom: 36px; }
+
+    /* CATEGORIES */
+    .categories { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 40px; }
+    .cat-btn {
+      padding: 8px 20px; border-radius: 100px;
+      border: 2px solid #000; background: transparent;
+      cursor: pointer; font-weight: 600; font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+    .cat-btn:hover, .cat-btn.active { background: #000; color: #fff; }
+
+    /* PRODUCTS GRID */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 24px;
+    }
+    .product-card {
+      background: #fff; border-radius: 8px;
+      overflow: hidden; transition: all 0.25s;
+      border: 1px solid #e8e8e8;
+      cursor: pointer;
+    }
+    .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.12); }
+    .product-img {
+      width: 100%; height: 200px; object-fit: cover;
+      background: #f0f0f0; display: flex; align-items: center;
+      justify-content: center; font-size: 3rem;
+    }
+    .product-info { padding: 16px; }
+    .product-category { font-size: 0.72rem; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+    .product-name { font-size: 1rem; font-weight: 700; color: #000; margin-bottom: 8px; }
+    .product-price { font-size: 1.2rem; font-weight: 800; color: #000; }
+    .product-price-old { text-decoration: line-through; color: #bbb; font-size: 0.85rem; margin-left: 8px; font-weight: 400; }
+    .add-btn {
+      width: 100%; margin-top: 12px; padding: 10px;
+      background: #000; color: #fff; border: none;
+      border-radius: 4px; cursor: pointer; font-weight: 700;
+      font-size: 0.9rem; transition: background 0.2s;
+    }
+    .add-btn:hover { background: #333; }
+    .badge {
+      display: inline-block; background: #000; color: #fff;
+      font-size: 0.65rem; padding: 2px 8px; border-radius: 2px;
+      font-weight: 700; letter-spacing: 1px; margin-bottom: 8px;
+    }
+
+    /* CART DRAWER */
+    .cart-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      z-index: 200; display: none;
+    }
+    .cart-overlay.open { display: block; }
+    .cart-drawer {
+      position: fixed; right: 0; top: 0; bottom: 0;
+      width: 400px; background: #fff; z-index: 201;
+      transform: translateX(100%); transition: transform 0.3s;
+      display: flex; flex-direction: column;
+    }
+    .cart-drawer.open { transform: translateX(0); }
+    .cart-header {
+      padding: 20px 24px; border-bottom: 1px solid #eee;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .cart-header h2 { font-size: 1.2rem; font-weight: 800; margin: 0; }
+    .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #000; }
+    .cart-items { flex: 1; overflow-y: auto; padding: 16px 24px; }
+    .cart-item {
+      display: flex; gap: 12px; padding: 12px 0;
+      border-bottom: 1px solid #f0f0f0; align-items: center;
+    }
+    .cart-item-emoji { font-size: 2rem; width: 56px; height: 56px; background: #f5f5f5; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .cart-item-info { flex: 1; }
+    .cart-item-name { font-weight: 700; font-size: 0.9rem; color: #000; }
+    .cart-item-price { color: #555; font-size: 0.85rem; margin-top: 2px; }
+    .cart-item-qty { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+    .qty-btn { width: 24px; height: 24px; border: 1px solid #ddd; background: #fff; border-radius: 2px; cursor: pointer; font-weight: 700; }
+    .qty-btn:hover { background: #f0f0f0; }
+    .remove-btn { color: #bbb; background: none; border: none; cursor: pointer; font-size: 1.1rem; }
+    .remove-btn:hover { color: #000; }
+    .cart-footer { padding: 20px 24px; border-top: 1px solid #eee; }
+    .cart-total { display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: 800; margin-bottom: 16px; }
+    .checkout-btn {
+      width: 100%; padding: 14px; background: #000; color: #fff;
+      border: none; border-radius: 4px; font-size: 1rem;
+      font-weight: 800; cursor: pointer; transition: background 0.2s;
+      letter-spacing: 1px;
+    }
+    .checkout-btn:hover { background: #333; }
+    .empty-cart { text-align: center; color: #888; padding: 40px 0; }
+    .empty-cart .icon { font-size: 3rem; margin-bottom: 12px; }
+
+    /* TOAST */
+    .toast {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: #000; color: #fff; padding: 12px 24px; border-radius: 4px;
+      font-weight: 600; z-index: 300; transition: transform 0.3s;
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* MODAL Produit */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      z-index: 300; display: none; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #fff; border-radius: 8px; max-width: 600px; width: 90%;
+      padding: 32px; position: relative; max-height: 90vh; overflow-y: auto;
+    }
+    .modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 1.5rem; cursor: pointer; }
+    .modal-emoji { font-size: 5rem; text-align: center; margin-bottom: 16px; }
+    .modal-name { font-size: 1.6rem; font-weight: 900; margin-bottom: 8px; }
+    .modal-desc { color: #555; margin-bottom: 16px; line-height: 1.6; }
+    .modal-price { font-size: 2rem; font-weight: 900; margin-bottom: 24px; }
+    .modal-add-btn {
+      width: 100%; padding: 14px; background: #000; color: #fff;
+      border: none; border-radius: 4px; font-size: 1rem;
+      font-weight: 800; cursor: pointer;
+    }
+    .modal-add-btn:hover { background: #333; }
+
+    /* FOOTER */
+    footer {
+      background: #000; color: #888; text-align: center;
+      padding: 40px; margin-top: 60px; font-size: 0.85rem;
+    }
+    footer strong { color: #fff; }
+
+    /* SUPABASE SETUP BANNER */
+    .setup-banner {
+      background: #fffbe6; border: 1px solid #ffe58f;
+      padding: 12px 24px; text-align: center; font-size: 0.9rem; color: #614700;
+    }
+    .setup-banner strong { color: #000; }
+
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2rem; }
+      .section { padding: 40px 20px; }
+      .navbar { padding: 0 16px; }
+      .cart-drawer { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- SETUP BANNER -->
+<div class="setup-banner" id="setupBanner">
+  ⚙️ <strong>Configuration Supabase requise</strong> — Remplacez <code>VOTRE_URL</code> et <code>VOTRE_ANON_KEY</code> dans le fichier JS pour activer la base de données.
+  <button onclick="document.getElementById('setupBanner').style.display='none'" style="margin-left:12px;cursor:pointer;background:none;border:1px solid #614700;border-radius:4px;padding:2px 8px;color:#614700;">✕</button>
+</div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="logo"><span>MON</span>SHOP</div>
+  <div class="nav-links">
+    <a href="#accueil">Accueil</a>
+    <a href="#produits">Produits</a>
+    <a href="#contact">Contact</a>
+  </div>
+  <button class="cart-btn" onclick="toggleCart()">
+    🛒 Panier
+    <span class="cart-count" id="cartCount">0</span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="accueil">
+  <div class="hero-content">
+    <h1>Tout ce dont<br>vous avez <span>besoin</span></h1>
+    <p>Découvrez notre sélection de produits soigneusement choisis pour vous.</p>
+    <button class="hero-btn" onclick="document.getElementById('produits').scrollIntoView({behavior:'smooth'})">
+      DÉCOUVRIR →
+    </button>
+  </div>
+</section>
+
+<!-- PRODUCTS SECTION -->
+<div class="section" id="produits">
+  <div class="section-title">Nos Produits</div>
+  <div class="section-sub">Une sélection variée pour tous les goûts</div>
+  <div class="divider"></div>
+
+  <!-- Filtres catégories -->
+  <div class="categories" id="categories"></div>
+
+  <!-- Grille produits -->
+  <div class="products-grid" id="productsGrid">
+    <div style="grid-column:1/-1;text-align:center;padding:40px;color:#888;">
+      Chargement des produits...
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer id="contact">
+  <strong>MONSHOP</strong><br><br>
+  Boutique en ligne — Tous droits réservés 2024<br>
+  contact@monshop.com
+</footer>
+
+<!-- CART DRAWER -->
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-header">
+    <h2>🛒 Mon Panier</h2>
+    <button class="close-btn" onclick="toggleCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer">
+    <div class="cart-total">
+      <span>Total</span>
+      <span id="cartTotal">0 MAD</span>
+    </div>
+    <button class="checkout-btn" onclick="checkout()">COMMANDER →</button>
+  </div>
+</div>
+
+<!-- PRODUCT MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="productModal">
+    <button class="modal-close" onclick="document.getElementById('modalOverlay').classList.remove('open')">✕</button>
+    <div class="modal-emoji" id="modalEmoji"></div>
+    <div class="modal-name" id="modalName"></div>
+    <div class="modal-desc" id="modalDesc"></div>
+    <div class="modal-price" id="modalPrice"></div>
+    <button class="modal-add-btn" id="modalAddBtn">Ajouter au panier</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// =============================================
+// CONFIGURATION SUPABASE
+// Allez sur supabase.com, créez un projet,
+// puis remplacez les valeurs ci-dessous
+// =============================================
+const SUPABASE_URL = 'VOTRE_URL'; // ex: https://xxxx.supabase.co
+const SUPABASE_KEY = 'VOTRE_ANON_KEY';
+
+// =============================================
+// DONNÉES DE DÉMONSTRATION
+// Ces produits s'affichent AVANT Supabase
+// Remplacez-les par vos vrais produits
+// =============================================
+const demoProducts = [
+  { id:1, name:'Sac à Main Cuir', category:'Mode', price:450, old_price:600, emoji:'👜', description:'Sac élégant en cuir véritable, parfait pour toutes occasions. Compartiments multiples, fermeture zippée.', badge:'PROMO' },
+  { id:2, name:'Montre Classique', category:'Accessoires', price:890, old_price:null, emoji:'⌚', description:'Montre analogique au design intemporel. Bracelet en acier inoxydable, étanche 30m.', badge:'NOUVEAU' },
+  { id:3, name:'Casque Audio', category:'Tech', price:320, old_price:400, emoji:'🎧', description:'Casque sans fil Bluetooth 5.0, autonomie 30h, réduction de bruit active.', badge:'PROMO' },
+  { id:4, name:'Parfum Exclusif', category:'Beauté', price:280, old_price:null, emoji:'🧴', description:'Eau de parfum 100ml aux notes florales et boisées. Tenue longue durée.', badge:null },
+  { id:5, name:'Sneakers Urban', category:'Mode', price:650, old_price:null, emoji:'👟', description:'Chaussures de sport tendance, semelle confort, disponible en 3 coloris.', badge:'NOUVEAU' },
+  { id:6, name:'Lunettes Soleil', category:'Accessoires', price:190, old_price:250, emoji:'🕶️', description:'Monture légère en acétate, verres polarisés UV400. Style vintage moderne.', badge:'PROMO' },
+  { id:7, name:'Smartphone Cover', category:'Tech', price:85, old_price:null, emoji:'📱', description:'Coque premium silicone anti-choc, compatible avec les derniers modèles.', badge:null },
+  { id:8, name:'Carnet Premium', category:'Papeterie', price:65, old_price:null, emoji:'📓', description:'Carnet A5 couverture rigide, 200 pages papier ivoire 90g. Idéal pour noter vos idées.', badge:null },
+];
+
+// =============================================
+// ÉTAT DE L'APPLICATION
+// =============================================
+let products = [];
+let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+let activeCategory = 'Tous';
+let supabaseConnected = false;
+
+// =============================================
+// SUPABASE — Charger les produits
+// =============================================
+async function loadProductsFromSupabase() {
+  if (SUPABASE_URL === 'VOTRE_URL') {
+    // Mode démo sans Supabase
+    products = demoProducts;
+    renderCategories();
+    renderProducts();
+    return;
+  }
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/products?select=*&order=created_at.desc`, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`
+      }
+    });
+    if (res.ok) {
+      products = await res.json();
+      supabaseConnected = true;
+      document.getElementById('setupBanner').style.display = 'none';
+    } else {
+      products = demoProducts;
+    }
+  } catch {
+    products = demoProducts;
+  }
+  renderCategories();
+  renderProducts();
+}
+
+// =============================================
+// CATÉGORIES
+// =============================================
+function renderCategories() {
+  const cats = ['Tous', ...new Set(products.map(p => p.category))];
+  const container = document.getElementById('categories');
+  container.innerHTML = cats.map(c => `
+    <button class="cat-btn ${c === activeCategory ? 'active' : ''}" onclick="filterCategory('${c}')">
+      ${c}
+    </button>
+  `).join('');
+}
+
+function filterCategory(cat) {
+  activeCategory = cat;
+  renderCategories();
+  renderProducts();
+}
+
+// =============================================
+// PRODUITS
+// =============================================
+function renderProducts() {
+  const filtered = activeCategory === 'Tous'
+    ? products
+    : products.filter(p => p.category === activeCategory);
+
+  const grid = document.getElementById('productsGrid');
+  if (!filtered.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#888;">Aucun produit trouvé.</div>';
+    return;
+  }
+  grid.innerHTML = filtered.map(p => `
+    <div class="product-card" onclick="openModal(${p.id})">
+      <div class="product-img">${p.emoji || '📦'}</div>
+      <div class="product-info">
+        ${p.badge ? `<div class="badge">${p.badge}</div>` : ''}
+        <div class="product-category">${p.category}</div>
+        <div class="product-name">${p.name}</div>
+        <div>
+          <span class="product-price">${p.price} MAD</span>
+          ${p.old_price ? `<span class="product-price-old">${p.old_price} MAD</span>` : ''}
+        </div>
+        <button class="add-btn" onclick="event.stopPropagation(); addToCart(${p.id})">
+          + Ajouter au panier
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// =============================================
+// MODAL PRODUIT
+// =============================================
+function openModal(id) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('modalEmoji').textContent = p.emoji || '📦';
+  document.getElementById('modalName').textContent = p.name;
+  document.getElementById('modalDesc').textContent = p.description;
+  document.getElementById('modalPrice').textContent = p.price + ' MAD';
+  document.getElementById('modalAddBtn').onclick = () => {
+    addToCart(id);
+    document.getElementById('modalOverlay').classList.remove('open');
+  };
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target.id === 'modalOverlay') {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+}
+
+// =============================================
+// PANIER
+// =============================================
+function addToCart(id) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  const existing = cart.find(x => x.id === id);
+  if (existing) {
+    existing.qty++;
+  } else {
+    cart.push({ ...p, qty: 1 });
+  }
+  saveCart();
+  showToast(`✅ ${p.name} ajouté au panier !`);
+}
+
+function removeFromCart(id) {
+  cart = cart.filter(x => x.id !== id);
+  saveCart();
+  renderCart();
+}
+
+function changeQty(id, delta) {
+  const item = cart.find(x => x.id === id);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) removeFromCart(id);
+  else { saveCart(); renderCart(); }
+}
+
+function saveCart() {
+  localStorage.setItem('cart', JSON.stringify(cart));
+  document.getElementById('cartCount').textContent = cart.reduce((s, i) => s + i.qty, 0);
+  renderCart();
+}
+
+function renderCart() {
+  const container = document.getElementById('cartItems');
+  if (!cart.length) {
+    container.innerHTML = `
+      <div class="empty-cart">
+        <div class="icon">🛒</div>
+        <div>Votre panier est vide</div>
+      </div>`;
+    document.getElementById('cartTotal').textContent = '0 MAD';
+    return;
+  }
+  container.innerHTML = cart.map(item => `
+    <div class="cart-item">
+      <div class="cart-item-emoji">${item.emoji || '📦'}</div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-price">${item.price} MAD × ${item.qty}</div>
+        <div class="cart-item-qty">
+          <button class="qty-btn" onclick="changeQty(${item.id}, -1)">−</button>
+          <span>${item.qty}</span>
+          <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
+        </div>
+      </div>
+      <button class="remove-btn" onclick="removeFromCart(${item.id})">🗑</button>
+    </div>
+  `).join('');
+  const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  document.getElementById('cartTotal').textContent = total + ' MAD';
+}
+
+function toggleCart() {
+  const drawer = document.getElementById('cartDrawer');
+  const overlay = document.getElementById('cartOverlay');
+  drawer.classList.toggle('open');
+  overlay.classList.toggle('open');
+}
+
+function checkout() {
+  if (!cart.length) { showToast('⚠️ Votre panier est vide !'); return; }
+  showToast('🎉 Commande passée avec succès !');
+  cart = [];
+  saveCart();
+  toggleCart();
+}
+
+// =============================================
+// TOAST
+// =============================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// =============================================
+// INIT
+// =============================================
+document.addEventListener('DOMContentLoaded', () => {
+  loadProductsFromSupabase();
+  saveCart();
+});
+</script>
+</body>
+</html>
